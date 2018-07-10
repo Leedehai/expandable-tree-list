@@ -1,0 +1,437 @@
+<!-- Standalone HTML with CSS and JS - movable to anywhere! -->
+<html>
+<head>
+	<title id="title">AST</title>
+	<style>
+		body {
+			font-family: Courier, Arial;
+			font-size: 95%;
+		}
+		.stripebox {
+			border-bottom: solid black 0px;
+			background-color: WhiteSmoke;
+		}
+		.stripebox h1 {
+			font-family: Courier, Arial;
+			font-size: 2.5em;
+			margin-bottom: 5px;
+		}
+		.stripecontent {
+			font-family: Arial;
+			padding-left: 23px;
+			padding-bottom: 12px;
+		}
+		#credit {
+			float: right;
+			padding-right: 10px;
+		}
+		#filehead, #tree {
+			padding-left: 23px;
+		}
+		a.control:link, a.control:active,
+		a.control:hover, a.control:visited {
+			color: blue;
+		}
+		ul.tree li {
+			list-style-type: none;
+			position: relative;
+		}
+		ul.tree li ul {
+			display: none;
+			padding-left: 15px
+		}
+		ul.tree li.open > ul {
+			display: block;
+		}
+		ul.tree li a {
+			color: black;
+			text-decoration: none;
+		}
+		ul.tree li a:before { /* the expand/collapse symbols before each item */
+			height: 1em;
+			font-size: .8em;
+			display: block;
+			position: absolute;
+			left: -1.2em;
+			top: .05em;
+		}
+		ul.tree li > a:not(:last-child):before {
+			content: '⊞';
+			font-weight: bold;
+		}
+		ul.tree li.open > a:not(:last-child):before {
+			content: '⊟';
+			font-weight: normal;
+		}
+		ul.tree li.open > a:last-child:before {
+			content: '';
+			font-weight: bold;
+		}
+		ul.tree li:before, ul.tree li:after {
+			position: absolute;
+    	left: -0.7em;
+			border-style: dotted;
+			border-color: #909090;
+			border-width: 0px;
+		}
+		ul.tree li:before {
+			content: "";
+			border-top-width: 1px;
+			height: 0;
+			width: 8px;
+			top: 9px;
+		}
+		ul.tree li:after {
+			content: "";
+			border-left-width: 1px;
+			height: 100%;
+			width: 0px;
+			top: 2px;
+		}
+		ul.tree > li::before {
+    	width: 0px;
+		}
+		ul.tree > li::after {
+    	height: 0px;
+		}
+		ul.tree > li li:last-child:after {
+    	height: 8px;
+		}
+	</style>
+	<script>
+		var selected;
+		var showFocus = function () {
+			selected.firstElementChild.style.color = "SlateBlue";
+		}
+		var hideFocus = function () {
+			selected.firstElementChild.style.color = "";
+		}
+		var clickSelected = function () {
+			selected.firstElementChild.click();
+		}
+		var gotoPrevSibling = function () {
+			hideFocus();
+			if (selected.previousElementSibling) { selected = selected.previousElementSibling; }
+			else if (selected.parentElement.previousElementSibling) {
+				liElems = selected.parentElement.previousElementSibling.getElementsByTagName("li");
+				if (liElems.length) { selected = liElems[0]; }
+			}
+			showFocus();
+		};
+		var gotoNextSibling = function () {
+			hideFocus();
+			if (selected.nextElementSibling) { selected = selected.nextElementSibling; }
+			else if (selected.parentElement.nextElementSibling) {
+				liElems = selected.parentElement.nextElementSibling.getElementsByTagName("li");
+				if (liElems.length) { selected = liElems[0]; }
+			}
+			showFocus();
+		}
+		var gotoFirstChild = function () {
+			hideFocus();
+			firstSub = selected.getElementsByTagName("ul")[0];
+			if (firstSub) {
+				selected = firstSub.getElementsByTagName("li")[0];
+			}
+			showFocus();
+		}
+		var gotoParent = function () {
+			hideFocus();
+			if (selected.parentElement && selected.parentElement.parentElement && selected.parentElement.parentElement.id != "tree") {
+				selected = selected.parentElement.parentElement;
+			}
+			showFocus();
+		}
+		var onLoad = function() {
+			// 1. HTML document title
+			var filename = document.getElementById('filename').innerHTML;
+			document.getElementById('title').innerHTML = "AST (" + filename + ")";
+
+			// 2. selection box
+			selected = document.getElementById('tree').firstElementChild.getElementsByTagName("li")[0];
+			showFocus();
+			
+			// 3. click handler
+			var treeListItems = document.querySelectorAll('ul.tree a');
+			for (var i = 0; i < treeListItems.length; i++) {
+				// click handler
+				treeListItems[i].addEventListener('click', function(e) {
+					var parent = e.target.parentElement;
+					hideFocus();
+					selected = parent;
+					showFocus();
+					var classList = parent.classList;
+					if (classList.contains("open")) { // close the element and its children
+						classList.remove('open');
+						var openChildrenList = parent.querySelectorAll(':scope .open');
+						for (var j = 0; j < openChildrenList.length; j++) {
+							openChildrenList[j].classList.remove('open');
+						}
+					} else { // open the element
+						classList.add('open');
+					}
+				});
+			}
+
+			// 4. keyboard handler
+			document.addEventListener('keydown', function(e) {
+					switch (e.key) {
+						case "Enter": case " ":
+							actExpandCollapse();
+							break;
+						case "ArrowDown":
+							gotoNextSibling();
+							break;
+						case "ArrowUp":
+							gotoPrevSibling();
+							break;
+						case "ArrowRight":
+							if (selected.classList.contains("open") === false) { clickSelected(); }
+							gotoFirstChild();
+							break;
+						case "ArrowLeft":
+							if (selected.classList.contains("open") === true) { clickSelected(); }
+							gotoParent();
+							break;
+					}
+				});
+		};
+
+		var expandAll = function() {
+			var allListItems = document.querySelectorAll('ul.tree li');
+			for (var k = 0; k < allListItems.length; k++) {
+				allListItems[k].classList.add("open");
+			}
+		};
+		var collapseAll = function() {
+			window.location.reload();
+		};
+		var EXPAND_ALL = "Expand All";
+		var COLLAPSE_ALL = "Collapse All";
+		var actExpandCollapse = function() {
+			var botton = document.getElementById("expand");
+			if (botton.innerHTML === EXPAND_ALL) {
+				expandAll();
+				botton.innerHTML = COLLAPSE_ALL;
+			} else {
+				collapseAll();
+				botton.innerHTML = EXPAND_ALL;
+			}
+		};
+		var boolCredit = false;
+		var displayCredit = function () {
+			credit = document.getElementById("credit");
+			if (!boolCredit) {
+				credit.innerHTML = "Haihong L.";
+				credit.style.color = "black";
+				credit.style.textDecoration = "none";
+			}
+			else {
+				credit.innerHTML = "Credit";
+				credit.style.color = "blue";
+				credit.style.textDecoration = "underline";
+			}
+			boolCredit = ~boolCredit;
+		}
+	</script>
+</head>
+
+<body onload="onLoad()">
+<div class="stripebox">
+	<div class="stripecontent">
+		<h1>AST View</h1>
+		<span>Click individual nodes or use arrow keys to navigate.</span>
+		<!-- do not use <button>s; ugly -->
+		<a class="control" id="expand" href="#" onClick="actExpandCollapse()" title="Enter or Space key">Expand All</a>
+		<a class="control" id="credit" href="#" onClick="displayCredit()">Credit</a>
+	</div>
+</div>
+<!-- generated content -->
+<p id="filehead">
+	File: <span id="filename">source.demo</span>
+</p>
+<div id="tree">
+<ul id="section1" class="tree">
+	<li><a href="#">Part 1.1</a>
+		<ul>
+		<li><a href="#">Item 1.1.A</a>
+			<ul>
+			<li><a href="#">Sub-item 1.1.A.1</a></li>
+			<li><a href="#">Sub-item 1.1.A.2</a></li>
+			<li><a href="#">Sub-item 1.1.A.3</a></li>
+			</ul>
+		</li>
+		<li><a href="#">Item 1.1.B</a>
+			<ul>
+				<li><a href="#">Sub-item 1.1.B.1</a></li>
+				<li><a href="#">Sub-item 1.1.B.2</a></li>
+				<li><a href="#">Sub-item 1.1.B.3</a></li>
+			</ul>
+		</li>
+		</ul>
+	</li>
+	
+	<li><a href="#">Part 1.2</a>
+		<ul>
+		<li><a href="#">Item 1.2.A</a>
+			<ul>
+			<li><a href="#">Sub-item 1.2.A.1</a></li>
+			<li><a href="#">Sub-item 1.2.A.2</a></li>
+			<li><a href="#">Sub-item 1.2.A.3</a></li>
+			</ul>
+		</li>
+		<li><a href="#">Item 1.2.B</a>
+			<ul>
+			<li><a href="#">Sub-item 1.2.B.1</a></li>
+			<li><a href="#">Sub-item 1.2.B.2</a></li>
+			<li><a href="#">Sub-item 1.2.B.3</a></li>
+			</ul>
+		</li>
+		</ul>
+	</li>
+	
+	<li><a href="#">Part 1.3</a>
+		<ul>
+		<li><a href="#">Item 1.3.A</a>
+			<ul>
+			<li><a href="#">Sub-item 1.3.A.1</a></li>
+			<li><a href="#">Sub-item 1.3.A.2</a></li>
+			<li><a href="#">Sub-item 1.3.A.3</a></li>
+			</ul>
+		</li>
+		<li><a href="#">Item 1.3.B</a>
+			<ul>
+			<li><a href="#">Sub-item 1.3.B.1</a></li>
+			<li><a href="#">Sub-item 1.3.B.2</a></li>
+			<li><a href="#">Sub-item 1.3.B.3</a></li>
+			</ul>
+		</li>
+		</ul>
+	</li>
+</ul>
+
+<ul id="section2" class="tree">
+  <li><a href="#">Part 2.1</a>
+    <ul>
+      <li><a href="#">Item 2.1.A</a>
+        <ul>
+          <li><a href="#">Sub-item 2.1.A.1</a></li>
+          <li><a href="#">Sub-item 2.1.A.2</a></li>
+          <li><a href="#">Sub-item 2.1.A.3</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Item 2.1.B</a>
+        <ul>
+          <li><a href="#">Sub-item 2.1.B.1</a></li>
+          <li><a href="#">Sub-item 2.1.B.2</a></li>
+          <li><a href="#">Sub-item 2.1.B.3</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Item 2.1.C</a>
+        <ul>
+          <li><a href="#">Sub-item 2.1.C.1</a></li>
+          <li><a href="#">Sub-item 2.1.C.2</a></li>
+          <li><a href="#">Sub-item 2.1.C.3</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Item 2.1.D</a>
+        <ul>
+          <li><a href="#">Sub-item 2.1.D.1</a></li>
+          <li><a href="#">Sub-item 2.1.D.2</a></li>
+          <li><a href="#">Sub-item 2.1.D.3</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Item 2.1.E</a>
+        <ul>
+          <li><a href="#">Sub-item 2.1.E.1</a></li>
+          <li><a href="#">Sub-item 2.1.E.2</a></li>
+          <li><a href="#">Sub-item 2.1.E.3</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+
+  <li><a href="#">Part 2.2</a>
+    <ul>
+      <li><a href="#">Item 2.2.A</a>
+        <ul>
+          <li><a href="#">Sub-item 2.2.A.1</a></li>
+          <li><a href="#">Sub-item 2.2.A.2</a></li>
+          <li><a href="#">Sub-item 2.2.A.3</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Item 2.2.B</a>
+        <ul>
+          <li><a href="#">Sub-item 2.2.B.1</a></li>
+          <li><a href="#">Sub-item 2.2.B.2</a></li>
+          <li><a href="#">Sub-item 2.2.B.3</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Item 2.2.C</a>
+        <ul>
+          <li><a href="#">Sub-item 2.2.C.1</a></li>
+          <li><a href="#">Sub-item 2.2.C.2</a></li>
+          <li><a href="#">Sub-item 2.2.C.3</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Item 2.2.D</a>
+        <ul>
+          <li><a href="#">Sub-item 2.2.D.1</a></li>
+          <li><a href="#">Sub-item 2.2.D.2</a></li>
+          <li><a href="#">Sub-item 2.2.D.3</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Item 2.2.E</a>
+        <ul>
+          <li><a href="#">Sub-item 2.2.E.1</a></li>
+          <li><a href="#">Sub-item 2.2.E.2</a></li>
+          <li><a href="#">Sub-item 2.2.E.3</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+
+  <li><a href="#">Part 2.3</a>
+    <ul>
+      <li><a href="#">Item 2.3.A</a>
+        <ul>
+          <li><a href="#">Sub-item 2.3.A.1</a></li>
+          <li><a href="#">Sub-item 2.3.A.2</a></li>
+          <li><a href="#">Sub-item 2.3.A.3</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Item 2.3.B</a>
+        <ul>
+          <li><a href="#">Sub-item 2.3.B.1</a></li>
+          <li><a href="#">Sub-item 2.3.B.2</a></li>
+          <li><a href="#">Sub-item 2.3.B.3</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Item 2.3.C</a>
+        <ul>
+          <li><a href="#">Sub-item 2.3.C.1</a></li>
+          <li><a href="#">Sub-item 2.3.C.2</a></li>
+          <li><a href="#">Sub-item 2.3.C.3</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Item 2.3.D</a>
+        <ul>
+          <li><a href="#">Sub-item 2.3.D.1</a></li>
+          <li><a href="#">Sub-item 2.3.D.2</a></li>
+          <li><a href="#">Sub-item 2.3.D.3</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Item 2.3.E</a>
+        <ul>
+          <li><a href="#">Sub-item 2.3.E.1</a></li>
+          <li><a href="#">Sub-item 2.3.E.2</a></li>
+					<li><a href="#">Sub-item 2.3.E.3</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+<!-- END: generated content -->
+</div>
+</body>
+</html>
