@@ -23,6 +23,7 @@
 		}
 		#credit {
 			float: right;
+			color: #909090;
 			padding-right: 10px;
 		}
 		#filehead, #tree {
@@ -222,7 +223,7 @@
 		var displayCredit = function () {
 			credit = document.getElementById("credit");
 			if (!boolCredit) {
-				credit.innerHTML = "Haihong L.";
+				credit.innerHTML = "<a href='https://github.com/Leedehai/expandable-tree-list'>Leedehai Github repo<a>";
 				credit.style.color = "black";
 				credit.style.textDecoration = "none";
 			}
@@ -294,7 +295,12 @@
 		<ul>
 		<li><a href="#">Item 1.3.A</a>
 			<ul>
-			<li><a href="#">Sub-item 1.3.A.1</a></li>
+			<li><a href="#">Sub-item 1.3.A.1</a>
+				<ul>
+				<li><a href="#">Subsub-item 1.3.A.1.a</a></li>
+				<li><a href="#">Subsub-item 1.3.A.1.b</a></li>
+			  </ul>
+			</li>
 			<li><a href="#">Sub-item 1.3.A.2</a></li>
 			<li><a href="#">Sub-item 1.3.A.3</a></li>
 			</ul>
