@@ -1,6 +1,64 @@
 <!-- Standalone HTML with CSS and JS - movable to anywhere! -->
 <html>
 <head>
+<!-- generated content -->
+  <!-- ordered with array (recommended) -->
+	<script type="application/json" id="section1JSON">
+		[
+			{ "1.1 string": "\"this is a string\"" },
+			{ "1.2 strange structure":  [1, "'char'", { "expandable": [
+																																	{ "a" : "'aa'" },
+																																	{ "b" : "" }
+			                                                          ]
+														                    }
+											            ]
+			},
+			{ "1.3 another object": [
+																{ "1.3.1": "stuff of 1.3.1" },
+																{	"1.3.2":  [
+																							{ "1.3.2.1": "stuff of 1.3.2.1" }
+																						]
+																}
+															]
+			},
+			{ "1.4 another object": [
+																{ "1.4.1":  [
+																							{ "1.4.1.1": "stuff of 1.4.1.1" },
+																							{ "1.4.1.2": "stuff of 1.4.1.2" }
+																						]
+																},
+																{ "1.4.2":  [
+																							{ "1.4.2.1": "stuff of 1.4.2.1" },
+																							{ "1.4.2.2": "stuff of 1.4.2.2" }
+																						]
+																}																
+														  ]
+			}
+		]
+	</script>
+	<!-- unordered with dict (not recommended) -->
+	<script type="application/json" id="section2JSON">
+			{
+				"2.1 string": "this is a string, too",
+				"2.2 arrary": [1, 2, 9],
+				"2.3 arrary": { "2.3.1": "stuff of 2.3.1",
+																"2.3.2": {
+																	"2.3.2.1": "stuff of 2.3.2.1",
+																	"2.3.2.2": "stuff of 2.3.2.2"
+																}
+				},
+				"2.4 another object": { "2.4.1": {
+																	"2.4.1.1": "stuff of 2.4.1.1",
+																	"2.4.1.2": "stuff of 2.4.1.2"
+																},
+																"2.4.2": {
+																	"2.4.2.1": "stuff of 2.4.2.1",
+																	"2.4.2.2": "stuff of 2.4.2.2"
+																}
+			  }
+		 }
+</script>
+<!-- END: generated content -->
 	<title id="title">AST</title>
 	<style>
 		body {
@@ -148,11 +206,17 @@
 			var filename = document.getElementById('filename').innerHTML;
 			document.getElementById('title').innerHTML = "AST (" + filename + ")";
 
-			// 2. selection box
+			// 2. render tree structure -- you may make number of sections dynamic insteaf of fixed
+			section1 = document.getElementById('section1');
+			section1.innerHTML = renderJSON(JSON.parse(document.getElementById('section1JSON').innerHTML));
+			section2 = document.getElementById('section2');
+			section2.innerHTML = renderJSON(JSON.parse(document.getElementById('section2JSON').innerHTML));
+
+			// 3. selection box, default on the first item on the tree
 			selected = document.getElementById('tree').firstElementChild.getElementsByTagName("li")[0];
 			showFocus();
-			
-			// 3. click handler
+
+			// 4. click handlers
 			var treeListItems = document.querySelectorAll('ul.tree a');
 			for (var i = 0; i < treeListItems.length; i++) {
 				// click handler
@@ -174,7 +238,7 @@
 				});
 			}
 
-			// 4. keyboard handler
+			// 5. keyboard handler
 			document.addEventListener('keydown', function(e) {
 					switch (e.key) {
 						case "Enter": case " ":
@@ -233,7 +297,33 @@
 				credit.style.textDecoration = "underline";
 			}
 			boolCredit = ~boolCredit;
-		}
+		};
+
+		function renderJSON(obj) {
+			var keys = [];
+			var objIsArray = Array.isArray(obj); // check if [..] array. Otherwise, it is an ordinary {..} object
+			jsonText = "";
+			for (var key in obj) {
+					if (typeof obj[key] === 'object') {
+							if (objIsArray === false) { jsonText += "<li><a href='#'>" + key + "</a><ul>"; }
+							jsonText += renderJSON(obj[key]);
+							if (objIsArray === false) { jsonText += "</ul></li>"; }
+					} else { // obj[key] not object, e.g. just a number or string, or empty
+						if (objIsArray === false) {
+							jsonText += "<li><a href='#'>" + key;
+							if (obj[key]) { jsonText += ": " + obj[key]; }
+							jsonText += "</a></li>";
+						} else {
+							jsonText += "<li><a href='#'>";
+							if (obj[key]) { jsonText += obj[key]; } else { jsonText += "(empty)"; }
+							jsonText += "</a></li>";
+						}
+					}
+
+					keys.push(key);
+			}
+			return jsonText;
+	  }
 	</script>
 </head>
 
@@ -247,197 +337,14 @@
 		<a class="control" id="credit" href="#" onClick="displayCredit()">Credit</a>
 	</div>
 </div>
-<!-- generated content -->
+
 <p id="filehead">
 	File: <span id="filename">source.demo</span>
 </p>
 <div id="tree">
-<ul id="section1" class="tree">
-	<li><a href="#">Part 1.1</a>
-		<ul>
-		<li><a href="#">Item 1.1.A</a>
-			<ul>
-			<li><a href="#">Sub-item 1.1.A.1</a></li>
-			<li><a href="#">Sub-item 1.1.A.2</a></li>
-			<li><a href="#">Sub-item 1.1.A.3</a></li>
-			</ul>
-		</li>
-		<li><a href="#">Item 1.1.B</a>
-			<ul>
-				<li><a href="#">Sub-item 1.1.B.1</a></li>
-				<li><a href="#">Sub-item 1.1.B.2</a></li>
-				<li><a href="#">Sub-item 1.1.B.3</a></li>
-			</ul>
-		</li>
-		</ul>
-	</li>
-	
-	<li><a href="#">Part 1.2</a>
-		<ul>
-		<li><a href="#">Item 1.2.A</a>
-			<ul>
-			<li><a href="#">Sub-item 1.2.A.1</a></li>
-			<li><a href="#">Sub-item 1.2.A.2</a></li>
-			<li><a href="#">Sub-item 1.2.A.3</a></li>
-			</ul>
-		</li>
-		<li><a href="#">Item 1.2.B</a>
-			<ul>
-			<li><a href="#">Sub-item 1.2.B.1</a></li>
-			<li><a href="#">Sub-item 1.2.B.2</a></li>
-			<li><a href="#">Sub-item 1.2.B.3</a></li>
-			</ul>
-		</li>
-		</ul>
-	</li>
-	
-	<li><a href="#">Part 1.3</a>
-		<ul>
-		<li><a href="#">Item 1.3.A</a>
-			<ul>
-			<li><a href="#">Sub-item 1.3.A.1</a>
-				<ul>
-				<li><a href="#">Subsub-item 1.3.A.1.a</a></li>
-				<li><a href="#">Subsub-item 1.3.A.1.b</a></li>
-			  </ul>
-			</li>
-			<li><a href="#">Sub-item 1.3.A.2</a></li>
-			<li><a href="#">Sub-item 1.3.A.3</a></li>
-			</ul>
-		</li>
-		<li><a href="#">Item 1.3.B</a>
-			<ul>
-			<li><a href="#">Sub-item 1.3.B.1</a></li>
-			<li><a href="#">Sub-item 1.3.B.2</a></li>
-			<li><a href="#">Sub-item 1.3.B.3</a></li>
-			</ul>
-		</li>
-		</ul>
-	</li>
-</ul>
 
-<ul id="section2" class="tree">
-  <li><a href="#">Part 2.1</a>
-    <ul>
-      <li><a href="#">Item 2.1.A</a>
-        <ul>
-          <li><a href="#">Sub-item 2.1.A.1</a></li>
-          <li><a href="#">Sub-item 2.1.A.2</a></li>
-          <li><a href="#">Sub-item 2.1.A.3</a></li>
-        </ul>
-      </li>
-      <li><a href="#">Item 2.1.B</a>
-        <ul>
-          <li><a href="#">Sub-item 2.1.B.1</a></li>
-          <li><a href="#">Sub-item 2.1.B.2</a></li>
-          <li><a href="#">Sub-item 2.1.B.3</a></li>
-        </ul>
-      </li>
-      <li><a href="#">Item 2.1.C</a>
-        <ul>
-          <li><a href="#">Sub-item 2.1.C.1</a></li>
-          <li><a href="#">Sub-item 2.1.C.2</a></li>
-          <li><a href="#">Sub-item 2.1.C.3</a></li>
-        </ul>
-      </li>
-      <li><a href="#">Item 2.1.D</a>
-        <ul>
-          <li><a href="#">Sub-item 2.1.D.1</a></li>
-          <li><a href="#">Sub-item 2.1.D.2</a></li>
-          <li><a href="#">Sub-item 2.1.D.3</a></li>
-        </ul>
-      </li>
-      <li><a href="#">Item 2.1.E</a>
-        <ul>
-          <li><a href="#">Sub-item 2.1.E.1</a></li>
-          <li><a href="#">Sub-item 2.1.E.2</a></li>
-          <li><a href="#">Sub-item 2.1.E.3</a></li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-
-  <li><a href="#">Part 2.2</a>
-    <ul>
-      <li><a href="#">Item 2.2.A</a>
-        <ul>
-          <li><a href="#">Sub-item 2.2.A.1</a></li>
-          <li><a href="#">Sub-item 2.2.A.2</a></li>
-          <li><a href="#">Sub-item 2.2.A.3</a></li>
-        </ul>
-      </li>
-      <li><a href="#">Item 2.2.B</a>
-        <ul>
-          <li><a href="#">Sub-item 2.2.B.1</a></li>
-          <li><a href="#">Sub-item 2.2.B.2</a></li>
-          <li><a href="#">Sub-item 2.2.B.3</a></li>
-        </ul>
-      </li>
-      <li><a href="#">Item 2.2.C</a>
-        <ul>
-          <li><a href="#">Sub-item 2.2.C.1</a></li>
-          <li><a href="#">Sub-item 2.2.C.2</a></li>
-          <li><a href="#">Sub-item 2.2.C.3</a></li>
-        </ul>
-      </li>
-      <li><a href="#">Item 2.2.D</a>
-        <ul>
-          <li><a href="#">Sub-item 2.2.D.1</a></li>
-          <li><a href="#">Sub-item 2.2.D.2</a></li>
-          <li><a href="#">Sub-item 2.2.D.3</a></li>
-        </ul>
-      </li>
-      <li><a href="#">Item 2.2.E</a>
-        <ul>
-          <li><a href="#">Sub-item 2.2.E.1</a></li>
-          <li><a href="#">Sub-item 2.2.E.2</a></li>
-          <li><a href="#">Sub-item 2.2.E.3</a></li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-
-  <li><a href="#">Part 2.3</a>
-    <ul>
-      <li><a href="#">Item 2.3.A</a>
-        <ul>
-          <li><a href="#">Sub-item 2.3.A.1</a></li>
-          <li><a href="#">Sub-item 2.3.A.2</a></li>
-          <li><a href="#">Sub-item 2.3.A.3</a></li>
-        </ul>
-      </li>
-      <li><a href="#">Item 2.3.B</a>
-        <ul>
-          <li><a href="#">Sub-item 2.3.B.1</a></li>
-          <li><a href="#">Sub-item 2.3.B.2</a></li>
-          <li><a href="#">Sub-item 2.3.B.3</a></li>
-        </ul>
-      </li>
-      <li><a href="#">Item 2.3.C</a>
-        <ul>
-          <li><a href="#">Sub-item 2.3.C.1</a></li>
-          <li><a href="#">Sub-item 2.3.C.2</a></li>
-          <li><a href="#">Sub-item 2.3.C.3</a></li>
-        </ul>
-      </li>
-      <li><a href="#">Item 2.3.D</a>
-        <ul>
-          <li><a href="#">Sub-item 2.3.D.1</a></li>
-          <li><a href="#">Sub-item 2.3.D.2</a></li>
-          <li><a href="#">Sub-item 2.3.D.3</a></li>
-        </ul>
-      </li>
-      <li><a href="#">Item 2.3.E</a>
-        <ul>
-          <li><a href="#">Sub-item 2.3.E.1</a></li>
-          <li><a href="#">Sub-item 2.3.E.2</a></li>
-					<li><a href="#">Sub-item 2.3.E.3</a></li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-</ul>
-<!-- END: generated content -->
+<ul id="section1" class="tree"></ul>
+<ul id="section2" class="tree"></ul>
 </div>
 </body>
 </html>
