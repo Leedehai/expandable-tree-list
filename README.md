@@ -4,7 +4,7 @@ Standalone HTML format with CSS and native JavaScript embedded. Single-file, no 
 
 Clickable, navigatable.
 
-You may populate the content of the tree manually or programmatically from another source.
+Take JSON as input: you need to populate the section "generated content" (in JSON format) manually or programmatically from another source.
 
 ### Features
 
